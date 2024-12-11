@@ -1,62 +1,64 @@
-from flask import Flask
-from flask_restful import reqparse, abort, Api, Resource
+from flask import Flask, render_template, request
+from flask_socketio import SocketIO, send, emit, join_room, leave_room
+from lobby import lobby
 
 app = Flask(__name__)
-api = Api(app)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app)
 
-TODOS = {
-    'todo1': {'task': 'build an API'},
-    'todo2': {'task': '?????'},
-    'todo3': {'task': 'profit!'},
+available_lobbies = {
+    'lobby1': lobby('lobby1', 5),
+    'lobby2': lobby('lobby2', 3),
+    'lobby3': lobby('lobby3', 4)
 }
 
+@socketio.on('connect')
+def test_connect():
+    send('Connected')
+    options_menu = {
+        'options': ['Option 1', 'Option 2', 'Option 3']
+    }
+    emit('show_options', options_menu)
 
-def abort_if_todo_doesnt_exist(todo_id):
-    if todo_id not in TODOS:
-        abort(404, message="Todo {} doesn't exist".format(todo_id))
+@socketio.on('join')
+def on_join(data):
+    #print(f"Join request received: {data}")  # Debugging
+    username = data['username']
+    lobby_name = data['lobby']
+    if lobby_name in available_lobbies:
+        lobby = available_lobbies[lobby_name]
+        if not lobby.is_full():
+            join_room(lobby_name)
+            lobby.add_player(username)
+            #print(f"User {username} added to {lobby_name}")  # Debugging
+            send(username + ' has entered the lobby', room=lobby_name)
+        else:
+            send('Lobby is full.', room=request.sid)
+    else:
+        send('Lobby not available.', room=request.sid)
 
-parser = reqparse.RequestParser()
-parser.add_argument('task')
+@socketio.on('leave')
+def on_leave(data):
+    print(f"Leave request received: {data}")  # Debug
+    username = data['username']
+    lobby_name = data['lobby']
+    if lobby_name in available_lobbies:
+        lobby = available_lobbies[lobby_name]
+        leave_room(lobby_name)
+        lobby.remove_player(username)
+        print(f"{username} removed from {lobby_name}")  # Debug
+        send(username + ' has left the lobby', room=lobby_name)
+    else:
+        print(f"Lobby {lobby_name} not found")  # Debug
 
 
-# Todo
-# shows a single todo item and lets you delete a todo item
-class Todo(Resource):
-    def get(self, todo_id):
-        abort_if_todo_doesnt_exist(todo_id)
-        return TODOS[todo_id]
 
-    def delete(self, todo_id):
-        abort_if_todo_doesnt_exist(todo_id)
-        del TODOS[todo_id]
-        return '', 204
-
-    def put(self, todo_id):
-        args = parser.parse_args()
-        task = {'task': args['task']}
-        TODOS[todo_id] = task
-        return task, 201
-
-
-# TodoList
-# shows a list of all todos, and lets you POST to add new tasks
-class TodoList(Resource):
-    def get(self):
-        return TODOS
-
-    def post(self):
-        args = parser.parse_args()
-        todo_id = int(max(TODOS.keys()).lstrip('todo')) + 1
-        todo_id = 'todo%i' % todo_id
-        TODOS[todo_id] = {'task': args['task']}
-        return TODOS[todo_id], 201
-
-##
-## Actually setup the Api resource routing here
-##
-api.add_resource(TodoList, '/todos')
-api.add_resource(Todo, '/todos/<todo_id>')
-
+@socketio.on('create')
+def handle_lobby_creation(data):
+    lobby_name = data['lobbyname']
+    max_users = data['needed_players']
+    available_lobbies[lobby_name] = lobby(lobby_name, max_users)
+    emit('lobby_created', {'lobbyname': lobby_name, 'needed_players': max_users})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, port=5000, allow_unsafe_werkzeug=True)
