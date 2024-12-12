@@ -4,7 +4,7 @@ from lobby import Lobby
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="http://localhost:5173")
 
 available_lobbies = {
     'lobby1': Lobby('lobby1', 6),
