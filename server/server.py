@@ -58,6 +58,12 @@ def handle_lobby_creation(data):
     available_lobbies[lobby_name] = Lobby(lobby_name, max_users)
     emit('lobby_created', {'lobbyname': lobby_name, 'needed_players': max_users})
 
+@socketio.on('show_lobbies')
+def on_show_lobbies():
+    lobbies = [{'name': lobby_name, 'max_players': lobby.player_count, 'current_players': len(lobby.players)}
+               for lobby_name, lobby in available_lobbies.items()]
+    emit('lobbies_list', lobbies)
+
 @socketio.on('move')
 def handle_move(data):
     lobby_name = data['lobby']
@@ -70,6 +76,7 @@ def handle_move(data):
     lobby = available_lobbies[lobby_name]
     message = lobby.make_move(player, move)
     emit(message['success'], message['state'])
+
 
 
 @socketio.on('chat_message')
