@@ -52,9 +52,9 @@ class TestSocketIO(unittest.TestCase):
         self.client.emit('leave', {'username': 'test_user', 'lobby': 'lobby1'})
         received = self.client2.get_received()
 
-        print("Received events during leave:", received)  # Debugging
+        #print("Received events during leave:", received)  # Debugging
         messages = [msg['args'] for msg in received if msg['name'] == 'message']
-        print("Extracted messages:", messages)  # Debugging
+        #print("Extracted messages:", messages)  # Debugging
 
         self.assertIn('test_user has left the lobby', messages)
 
