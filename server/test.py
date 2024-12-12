@@ -11,6 +11,7 @@ class TestSocketIO(unittest.TestCase):
         self.app = app
         self.socketio = socketio
         self.client = self.socketio.test_client(self.app)
+        self.client2 = self.socketio.test_client(self.app)
 
     def test_options_menu_on_connect(self):
         self.client.connect()
@@ -45,15 +46,17 @@ class TestSocketIO(unittest.TestCase):
 
     def test_leave_lobby(self):
         self.client.connect()
+        self.client2.connect()
+        self.client2.emit('join', {'username': 'listener', 'lobby': 'lobby1'})
         self.client.emit('join', {'username': 'test_user', 'lobby': 'lobby1'})
         self.client.emit('leave', {'username': 'test_user', 'lobby': 'lobby1'})
-        received = self.client.get_received()
+        received = self.client2.get_received()
 
         print("Received events during leave:", received)  # Debugging
         messages = [msg['args'] for msg in received if msg['name'] == 'message']
         print("Extracted messages:", messages)  # Debugging
 
-        self.assertIn('testuser has left the lobby', messages)
+        self.assertIn('test_user has left the lobby', messages)
 
 
     def tearDown(self):
