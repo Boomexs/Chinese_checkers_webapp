@@ -51,8 +51,6 @@ def on_leave(data):
     #else:
         #print(f"Lobby {lobby_name} not found")  # Debug
 
-
-
 @socketio.on('create')
 def handle_lobby_creation(data):
     lobby_name = data['lobbyname']
@@ -73,6 +71,17 @@ def handle_move(data):
     message = lobby.make_move(player, move)
     emit(message['success'], message['state'])
 
+
+@socketio.on('chat_message')
+def handle_chat_message(data):
+    lobby_name = data['lobby']
+    username = data['username']
+    message = data['message']
+
+    if lobby_name in available_lobbies:
+        emit('chat_message', {'username': username, 'message': message}, room=lobby_name)
+    else:
+        emit('error', {'message': 'Lobby not available'}, room=request.sid)
 
 
 if __name__ == '__main__':
