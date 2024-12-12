@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import { useSocket } from './SocketContent.jsx';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [socketPort, setSocketPort] = useState('');
+    const { setSocket } = useSocket(); // Use context to set the socket instance
     const navigate = useNavigate();
 
     const handleUsername = (event) => {
@@ -16,14 +18,17 @@ const Login = () => {
     };
 
     const connect = () => {
-        // Establish socket connection to the specified port
+        // Establish socket connection
         const socketConnection = io(`http://localhost:${socketPort}`);
 
         socketConnection.on('connect', () => {
             console.log('Connected to server on port', socketPort);
 
-            // Navigate to the lobbies page, passing socket and username
-            navigate('/lobbies', { state: { socket: socketConnection, username } });
+            // Store the socket instance in context
+            setSocket(socketConnection);
+
+            // Navigate to the lobbies page
+            navigate('/lobbies', { state: { username } });
         });
 
         socketConnection.on('show_options', (data) => {
