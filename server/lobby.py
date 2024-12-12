@@ -1,5 +1,5 @@
 from board import Board
-from starBoard import StarBoard
+from board import Board
 
 class Lobby:
     def __init__(self, lobby_name: str, needed_players: int):
@@ -7,7 +7,7 @@ class Lobby:
         self.players = []
         self.player_count = needed_players
         self.current_turn_index = 0
-        self.board: Board = StarBoard().create_board(needed_players)   # create a board object for x players; x=needed_players
+        self.board: Board = Board(needed_players)   # create a board object for x players; x=needed_players
 
     def add_player(self, player: str):
         if len(self.players) < self.player_count:
