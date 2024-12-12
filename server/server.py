@@ -4,7 +4,7 @@ from lobby import Lobby
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, cors_allowed_origins="http://localhost:5173")
+socketio = SocketIO(app, cors_allowed_origins="http://localhost:5174")
 
 available_lobbies = {
     'lobby1': Lobby('lobby1', 6),
@@ -22,7 +22,7 @@ def test_connect():
 
 @socketio.on('join')
 def on_join(data):
-    #print(f"Join request received: {data}")  # Debugging
+    print(f"Join request received: {data}")  # Debugging
     username = data['username']
     lobby_name = data['lobby']
     if lobby_name in available_lobbies:
@@ -30,7 +30,7 @@ def on_join(data):
         if not lobby.is_full():
             join_room(lobby_name)
             lobby.add_player(username)
-            #print(f"User {username} added to {lobby_name}")  # Debugging
+            print(f"User {username} added to {lobby_name}")  # Debugging
             send(username + ' has entered the lobby', room=lobby_name)
         else:
             send('Lobby is full.', room=request.sid)
@@ -81,12 +81,14 @@ def handle_move(data):
 
 @socketio.on('chat_message')
 def handle_chat_message(data):
+    print(data)
     lobby_name = data['lobby']
     username = data['username']
     message = data['message']
 
     if lobby_name in available_lobbies:
-        emit('chat_message', {'username': username, 'message': message}, room=lobby_name)
+        print(f"Chat message from {username} in {lobby_name}: {message}")
+        socketio.emit('chat_message', {'username': username, 'message': message}, room=lobby_name)
     else:
         emit('error', {'message': 'Lobby not available'}, room=request.sid)
 

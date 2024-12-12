@@ -7,9 +7,11 @@ const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
+    const [username, setUsername] = useState('');
+    const [lobbyName, setLobbyName] = useState('');
 
     return (
-        <SocketContext.Provider value={{ socket, setSocket }}>
+        <SocketContext.Provider value={{ socket, setSocket, username, setUsername, lobbyName, setLobbyName }}>
             {children}
         </SocketContext.Provider>
     );

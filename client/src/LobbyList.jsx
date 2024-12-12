@@ -5,8 +5,7 @@ import { useSocket } from './SocketContent.jsx';
 const LobbyList = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { socket } = useSocket(); // Access the socket instance from context
-    const { username } = location.state || {}; // Retrieve username from state
+    const { socket, setLobbyName } = useSocket(); // Access the socket instance from context
     const [lobbies, setLobbies] = useState([]);
 
     useEffect(() => {
@@ -32,12 +31,14 @@ const LobbyList = () => {
     }, [socket, navigate]);
 
     const joinLobby = (lobby) => {
+        setLobbyName(lobby.name);
         // Ensure only serializable values are passed
         const serializableLobby = {
             name: lobby.name,
             maxPlayers: lobby.maxPlayers,
             currentPlayers: lobby.currentPlayers,
         };
+        socket.emit('join_lobby', {lobby: lobby.name});
         navigate('/lobby', { state: { lobby: serializableLobby } });
     };
 
@@ -51,7 +52,7 @@ const LobbyList = () => {
                         <p>
                             Players: {lobby.current_players}/{lobby.max_players}
                         </p>
-                        <button onClick={() => joinLobby(lobby.name)}>Join Lobby</button>
+                        <button onClick={() => joinLobby(lobby)}>Join Lobby</button>
                     </li>
                 ))}
             </ul>

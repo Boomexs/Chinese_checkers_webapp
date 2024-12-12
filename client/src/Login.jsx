@@ -6,7 +6,7 @@ import { useSocket } from './SocketContent.jsx';
 const Login = () => {
     const [username, setUsername] = useState('');
     const [socketPort, setSocketPort] = useState('');
-    const { setSocket } = useSocket(); // Use context to set the socket instance
+    const { setSocket, setUsername: setContextUsername} = useSocket(); // Use context to set the socket instance and username
     const navigate = useNavigate();
 
     const handleUsername = (event) => {
@@ -24,8 +24,9 @@ const Login = () => {
         socketConnection.on('connect', () => {
             console.log('Connected to server on port', socketPort);
 
-            // Store the socket instance in context
+            // Store the socket instance and username in context
             setSocket(socketConnection);
+            setContextUsername(username);
 
             // Navigate to the lobbies page
             navigate('/lobbies', { state: { username } });
