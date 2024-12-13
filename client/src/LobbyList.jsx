@@ -5,7 +5,7 @@ import { useSocket } from './SocketContent.jsx';
 const LobbyList = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { socket, setLobbyName } = useSocket(); // Access the socket instance from context
+    const { socket, setLobbyName, username } = useSocket(); // Access the socket instance from context
     const [lobbies, setLobbies] = useState([]);
 
     useEffect(() => {
@@ -38,7 +38,7 @@ const LobbyList = () => {
             maxPlayers: lobby.maxPlayers,
             currentPlayers: lobby.currentPlayers,
         };
-        socket.emit('join_lobby', {lobby: lobby.name});
+        socket.emit('join', {username: username, lobby: lobby.name});
         navigate('/lobby', { state: { lobby: serializableLobby } });
     };
 
