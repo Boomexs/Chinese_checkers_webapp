@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { useSocket } from './SocketContent.jsx';
+import './assets/Login.css'; // Import the CSS file
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [socketPort, setSocketPort] = useState('');
-    const { setSocket, setUsername: setContextUsername} = useSocket(); // Use context to set the socket instance and username
+    const { setSocket, setUsername: setContextUsername } = useSocket();
     const navigate = useNavigate();
 
     const handleUsername = (event) => {
@@ -18,17 +19,12 @@ const Login = () => {
     };
 
     const connect = () => {
-        // Establish socket connection
         const socketConnection = io(`http://localhost:${socketPort}`);
 
         socketConnection.on('connect', () => {
             console.log('Connected to server on port', socketPort);
-
-            // Store the socket instance and username in context
             setSocket(socketConnection);
             setContextUsername(username);
-
-            // Navigate to the lobbies page
             navigate('/lobbies', { state: { username } });
         });
 
@@ -42,22 +38,22 @@ const Login = () => {
     };
 
     return (
-        <>
-            <h1>Log in</h1>
-            <div style={{ marginBottom: '20px' }}>
+        <div className="login-container">
+            <h1 className="login-title">Log in</h1>
+            <div className="login-field">
                 <label>
                     Username: {' '}
                     <input value={username} onChange={handleUsername} />
                 </label>
             </div>
-            <div style={{ marginBottom: '20px' }}>
+            <div className="login-field">
                 <label>
                     Socket Port: {' '}
                     <input value={socketPort} onChange={handleSocketPort} />
                 </label>
             </div>
-            <button onClick={connect}>Connect</button>
-        </>
+            <button className="login-button" onClick={connect}>Connect</button>
+        </div>
     );
 };
 
