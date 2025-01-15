@@ -4,7 +4,8 @@ from lobby import Lobby
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, cors_allowed_origins="http://localhost:5174")
+
+socketio = SocketIO(app, cors_allowed_origins="http://localhost:5173")
 
 available_lobbies = {
     'lobby1': Lobby('lobby1', 6),
@@ -91,6 +92,14 @@ def handle_chat_message(data):
         socketio.emit('chat_message', {'username': username, 'message': message}, room=lobby_name)
     else:
         emit('error', {'message': 'Lobby not available'}, room=request.sid)
+
+@socketio.on('get_board')
+def handle_get_board(data):
+    print(f"get_board: {data}")
+    lobby_name = data['lobby']
+    if lobby_name in available_lobbies:
+        print(f"updating board for {lobby_name}")
+        socketio.emit('update_board', {'board': available_lobbies[lobby_name].board.board_to_data()}, room=lobby_name )
 
 
 if __name__ == '__main__':

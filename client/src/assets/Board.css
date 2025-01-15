@@ -23,11 +23,23 @@
 .board-item {
     width: var(--cell-size);
     height: var(--cell-size);
-    background-color: #6c63ff; /* Cell background color */
     border-radius: 50%; /* Circular cells */
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3); /* Optional: adds shadow */
 }
 
 .board-item:hover {
     background-color: #4a45d1; /* Optional: hover effect */
+}
+
+.board-empty-color {
+    background-color: #6c63ff; /* Cell background color */
+
+}
+
+.p1-color {
+    background-color: red;
+}
+
+.p2-color {
+    background-color: green;
 }
