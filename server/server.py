@@ -1,15 +1,17 @@
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from lobby import Lobby
+from move_validator import possible_moves, check_for_win
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, cors_allowed_origins="http://localhost:5174")
+
+socketio = SocketIO(app, cors_allowed_origins="http://localhost:5173")
 
 available_lobbies = {
     'lobby1': Lobby('lobby1', 6),
     'lobby2': Lobby('lobby2', 2),
-    'lobby3': Lobby('lobby3', 4)
+    'lobby3': Lobby('lobby3', 3)
 }
 
 @socketio.on('connect')
@@ -22,7 +24,7 @@ def test_connect():
 
 @socketio.on('join')
 def on_join(data):
-    print(f"Join request received: {data}")  # Debugging
+    # print(f"Join request received: {data}")  # Debugging
     username = data['username']
     lobby_name = data['lobby']
     if lobby_name in available_lobbies:
@@ -30,7 +32,10 @@ def on_join(data):
         if not lobby.is_full():
             join_room(lobby_name)
             lobby.add_player(username)
-            print(f"User {username} added to {lobby_name}")  # Debugging
+            if(lobby.is_full()):
+                lobby.state = 'turn' + str(lobby.players[0])
+                socketio.emit('update_state', {'state': lobby.state})
+            # print(f"User {username} added to {lobby_name}")  # Debugging
             send(username + ' has entered the lobby', room=lobby_name)
         else:
             send('Lobby is full.', room=request.sid)
@@ -60,8 +65,7 @@ def handle_lobby_creation(data):
 
 @socketio.on('show_lobbies')
 def on_show_lobbies():
-    lobbies = [{'name': lobby_name, 'max_players': lobby.player_count, 'current_players': len(lobby.players)}
-               for lobby_name, lobby in available_lobbies.items()]
+    lobbies = [{'name': lobby_name, 'max_players': lobby.player_count, 'current_players': len(lobby.players)} for lobby_name, lobby in available_lobbies.items()]
     emit('lobbies_list', lobbies)
 
 @socketio.on('move')
@@ -69,7 +73,6 @@ def handle_move(data):
     lobby_name = data['lobby']
     player = data['player']
     move = data['move']
-
     if not lobby_name in available_lobbies:
         emit('error', {'message': 'Wrong lobby'}, room=request.sid)
         return
@@ -77,21 +80,59 @@ def handle_move(data):
     message = lobby.make_move(player, move)
     emit(message['success'], message['state'])
 
-
-
 @socketio.on('chat_message')
 def handle_chat_message(data):
-    print(data)
+    # print(data)
     lobby_name = data['lobby']
     username = data['username']
     message = data['message']
 
     if lobby_name in available_lobbies:
-        print(f"Chat message from {username} in {lobby_name}: {message}")
+        # print(f"Chat message from {username} in {lobby_name}: {message}")
         socketio.emit('chat_message', {'username': username, 'message': message}, room=lobby_name)
     else:
         emit('error', {'message': 'Lobby not available'}, room=request.sid)
 
+@socketio.on('get_board')
+def handle_get_board(data):
+    # print(f"get_board: {data}")
+    lobby_name = data['lobby']
+    if lobby_name in available_lobbies:
+        # print(f"updating board for {lobby_name}")
+        emit('update_board', {'board': available_lobbies[lobby_name].board.board_to_data()}, room=lobby_name )
+
+@socketio.on('p_click')
+def handle_get_board(data):
+    # print(f'p_click: {data}')
+    lobby_name = data['lobby']
+    # player = data['player']
+    index = data['index']
+    if lobby_name in available_lobbies:
+        player = available_lobbies[lobby_name].players.index(data['username']) + 1
+        board_data = possible_moves(available_lobbies[lobby_name].board, index, player)
+        if board_data:
+            emit('update_board',{'board': board_data}, room=lobby_name)
+        # else:
+        #     board_data = move(available_lobbies[lobby_name].board, index, player)
+        #     if board_data:
+        #         emit('update_board',{'board': available_lobbies[lobby_name].board}, room=lobby_name)
+
+@socketio.on('p_move')
+def handle_p_move(data):
+    lobby_name = data['lobby']
+    username = data['username']
+    player = available_lobbies[lobby_name].players.index(data['username']) + 1
+    if available_lobbies[lobby_name].state == ('turn' + username):
+        destination = data['destination']
+        available_lobbies[lobby_name].board.flatarr[destination].content = available_lobbies[lobby_name].board.selected.content
+        available_lobbies[lobby_name].board.selected.content = 0
+        emit('update_board', {'board': available_lobbies[lobby_name].board.board_to_data()}, room=lobby_name)
+        available_lobbies[lobby_name].next_turn()
+        emit('update_state',{'state': available_lobbies[lobby_name].state}, room=lobby_name)
+        if check_for_win(available_lobbies[lobby_name].board,player):
+            available_lobbies[lobby_name].state = 'won' + username
+            emit('update_state',{'state': available_lobbies[lobby_name].state}, room=lobby_name)
+            emit('chat_message',{'username': 'server', 'message': username + ' has won the game!'}, room=lobby_name)
 
 if __name__ == '__main__':
     socketio.run(app, port=5000, allow_unsafe_werkzeug=True)

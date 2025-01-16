@@ -1,0 +1,105 @@
+.lobby-list-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #f0f8ff;
+    min-height: 100vh;
+}
+
+.lobby-list {
+    width: 60%;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lobby-list h1 {
+    color: #4b0082;
+    margin-bottom: 20px;
+}
+
+.lobby-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.lobby-list li {
+    background-color: #e6e6fa;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.lobby-list li h3 {
+    margin: 0;
+    color: #4b0082;
+}
+
+.lobby-list li p {
+    margin: 5px 0;
+    color: #00008b;
+}
+
+.lobby-list li button {
+    padding: 10px 20px;
+    background-color: #4b0082;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.lobby-list li button:hover {
+    background-color: #6a0dad;
+}
+
+.create-lobby {
+    width: 35%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.create-lobby h1 {
+    color: #4b0082;
+    margin-bottom: 20px;
+}
+
+.create-lobby form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.create-lobby label {
+    color: #00008b;
+    margin-bottom: 10px;
+}
+
+.create-lobby input {
+    padding: 10px;
+    border: 2px solid #00008b;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.create-lobby button {
+    padding: 10px 20px;
+    background-color: #4b0082;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.create-lobby button:hover {
+    background-color: #6a0dad;
+}

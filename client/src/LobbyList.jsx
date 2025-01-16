@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSocket } from './SocketContent.jsx';
+import CreateLobbyContainer from './CreateLobbyContainer';
+import './assets/LobbyList.css';
 
 const LobbyList = () => {
     const location = useLocation();
@@ -31,31 +33,40 @@ const LobbyList = () => {
     }, [socket, navigate]);
 
     const joinLobby = (lobby) => {
-        setLobbyName(lobby.name);
+        //setLobbyName(lobby.name);
         // Ensure only serializable values are passed
         const serializableLobby = {
             name: lobby.name,
-            maxPlayers: lobby.maxPlayers,
-            currentPlayers: lobby.currentPlayers,
+            maxPlayers: lobby.max_players,
+            currentPlayers: lobby.current_players,
         };
-        socket.emit('join', {username: username, lobby: lobby.name});
+        console.log('Joining lobby:', lobby.name);
+        console.log('currentPlayers:', lobby.current_players);
+        console.log('maxPlayers:', lobby.max_players);
+        socket.emit('join', { username: username, lobby: lobby.name });
         navigate('/lobby', { state: { lobby: serializableLobby } });
     };
 
+
     return (
-        <div>
-            <h1>Available Lobbies</h1>
-            <ul>
-                {lobbies.map((lobby, index) => (
-                    <li key={index}>
-                        <h3>{lobby.name}</h3>
-                        <p>
-                            Players: {lobby.current_players}/{lobby.max_players}
-                        </p>
-                        <button onClick={() => joinLobby(lobby)}>Join Lobby</button>
-                    </li>
-                ))}
-            </ul>
+        <div className="lobby-list-container">
+            <div className="lobby-list">
+                <h1>Available Lobbies</h1>
+                <ul>
+                    {lobbies.map((lobby, index) => (
+                        <li key={index}>
+                            <h3>{lobby.name}</h3>
+                            <p>
+                                Players: {lobby.current_players}/{lobby.max_players}
+                            </p>
+                            <button onClick={() => joinLobby(lobby)}>Join Lobby</button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div className="create-lobby">
+                <CreateLobbyContainer joinCreatedLobby={joinLobby}/> {/* Add the CreateLobbyContainer component */}
+            </div>
         </div>
     );
 };
