@@ -76,7 +76,7 @@ def check_move_rec(node: Board_node):
 
 
 def possible_moves(board: Board, node_index: int, p: int):
-    print('possible moves start')
+    # print('possible moves start')
     node: Board_node
     # print(board.flatarr)
     node = board.flatarr[node_index]
@@ -86,9 +86,12 @@ def possible_moves(board: Board, node_index: int, p: int):
 
     if node.content != p:
         return False
-    
+
     copy_of_board = copy.deepcopy(board)
     copy_of_node = copy_of_board.flatarr[node_index]
+    check_move_rec(copy_of_node)  
+        
+    board.selected = node
     # if copy_of_node.up_right is not None:
     #     print('up_right')
     #     print(copy_of_node.up_right.id)
@@ -107,8 +110,23 @@ def possible_moves(board: Board, node_index: int, p: int):
     # if copy_of_node.down_right is not None:
     #     print('down_right')
     #     print(copy_of_node.down_right.id)
-    check_move_rec(copy_of_node)
-    ret = copy_of_board.board_to_data()
-    return ret
 
+    return copy_of_board.board_to_data()
 
+def check_for_win(board: Board, p: int):
+    zone = board.zones[board.win_zones[p]]
+    print(board.zones[board.win_zones[p]],board.zones,board.win_zones,p)
+    if None in zone:
+        return False
+    # print('made it past None in zone')
+    win_flag = False
+
+    for cell in zone:
+        if cell.content == p:
+            # print('found cell with p')
+            win_flag = True
+        elif cell.content == 0:
+            # print('found cell with 0 :(')
+            return False
+        
+    return win_flag

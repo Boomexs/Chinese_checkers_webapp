@@ -10,6 +10,7 @@ const Lobby = () => {
     const [newMessage, setNewMessage] = useState('');
     const [currentPlayers, setCurrentPlayers] = useState(0);
     const [maxPlayers, setMaxPlayers] = useState(0);
+    const [state, setState] = useState('waiting')
     const navigate = useNavigate();
     const location = useLocation();
     const { lobby } = location.state || {}; // Access lobby from navigation state
@@ -65,6 +66,8 @@ const Lobby = () => {
         socket.emit('leave', { username: username, lobby: lobby.name });
         navigate('/lobbies');
     };
+
+
 
     return (
         <div className="lobby-content">

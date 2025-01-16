@@ -36,19 +36,33 @@ const Board = () => {
     const location = useLocation();
     const { lobby } = location.state || {};
     const [ board, setBoard ] = useState([[1,1],[2,2]]);
+    const [turn, setTurn ] = useState('waiting')
+
+    useEffect(() => {
+      socket.on('update_state', (data) => {
+          console.log('update_state:',data);
+          setTurn(data['state'])
+      })
+
+  }, [socket])
 
 
     useEffect(()=>{
         socket.on('update_board',(data) => {
-            console.log('update_board: ', data['board']);
             setBoard(data['board']);
         });
 
         socket.emit('get_board', {'lobby': lobby.name});
     },[socket]);
 
-    const onPClick = (index) => {
-        socket.emit('p_click', {'lobby': lobby.name, 'player': 1, 'index': index});
+    const onPClick = (index,id) => {
+      console.log(('turn' + username))
+      console.log(turn === 'turn' + username)
+      if(turn === ('turn' + username) && id > 0){
+        socket.emit('p_click', {'lobby': lobby.name, 'username': username, 'index': index});
+      }else if(turn === ('turn' + username) && id == -2){
+        socket.emit('p_move', {'lobby': lobby.name, 'username': username, 'destination': index});
+      }
     };
 
     // socket.emit('get_board', {'lobby': lobby.name});
@@ -64,7 +78,6 @@ const Board = () => {
     //         ))}
     //     </div>
     // ));
-    console.log(board);
 //     const rows = 
 //   <div className="board">
 //     {board.map((row, rowIndex) => (
@@ -90,10 +103,10 @@ const rows =
       return (
         <div
           key={itemIndex}
-          onClick={() => onPClick(globalCount)}
+          onClick={() => onPClick(globalCount,item)}
           className={`board-item p${item}-color`}
         >
-          {globalCount} {/* Display the global count */}
+          {/* {globalCount} Display the global count */}
         </div>
       );
     })}

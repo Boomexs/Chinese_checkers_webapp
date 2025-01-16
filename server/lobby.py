@@ -6,8 +6,9 @@ class Lobby:
         self.name = lobby_name
         self.players = []
         self.player_count = needed_players
-        self.current_turn_index = 0
+        self.turn = 0
         self.board: Board = Board(needed_players)
+        self.state: 'waiting'
 
     def add_player(self, player: str):
         if len(self.players) < self.player_count:
@@ -21,7 +22,10 @@ class Lobby:
     def is_full(self):
         return len(self.players) >= self.player_count
 
-    def make_move(self, player: str, move: dict):
-        if player != self.players[self.current_turn_index]:
-            return {'success' : False, 'state' : 'Not your turn!'}
-        return self.board.make_move(move)
+    def has_won(self):
+        pass
+
+    def next_turn(self):
+        self.turn += 1
+        self.state = 'turn' + str(self.players[self.turn%len(self.players)])
+

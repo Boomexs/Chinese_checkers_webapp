@@ -46,6 +46,23 @@
 .p2-color {
     background-color: blue;
 }
+
+.p3-color {
+    background-color: orange;
+}
+
+.p4-color {
+    background-color: purple;
+}
+
+.p5-color {
+    background-color: pink;
+}
+
+.p6-color {
+    background-color: yellow;
+}
+
 .p-1-color {
     background-color: #cccccc;
     opacity: 0.3;
@@ -62,5 +79,5 @@
 }
 
 .p-2-color {
-    background-color: green;
+    background-color: rgb(87, 233, 87);
 }

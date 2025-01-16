@@ -101,13 +101,54 @@ class Board():
         self.make_flat_array()
         self.connect_board()
         self.make_zones()
-        self.add_player('up',1)
-        self.add_player('down',2)
-        self.add_player('left_up',-1)
-        self.add_player('left_down',-1)
-        self.add_player('right_up',-1)
-        self.add_player('right_down',-1)
-
+        if player_count == 2:
+            self.add_player('up',1)
+            self.add_player('down',2)
+            self.add_player('left_up',-1)
+            self.add_player('left_down',-1)
+            self.add_player('right_up',-1)
+            self.add_player('right_down',-1)
+            self.win_zones = {}
+            self.win_zones[2] = 'up'
+            self.win_zones[1] = 'down'
+        if player_count == 3:
+            self.add_player('up',1)
+            self.add_player('down',0)
+            self.add_player('left_up',0)
+            self.add_player('left_down',2)
+            self.add_player('right_up',0)
+            self.add_player('right_down',3)
+            self.win_zones = {}
+            self.win_zones[1] = 'down' 
+            self.win_zones[2] = 'right_up'
+            self.win_zones[3] = 'left_up'
+        if player_count == 4:
+            self.add_player('up',-1)
+            self.add_player('down',-1)
+            self.add_player('left_up',1)
+            self.add_player('left_down',2)
+            self.add_player('right_down',3)
+            self.add_player('right_up',4)
+            self.win_zones = {}
+            self.win_zones[1] = 'right_down' 
+            self.win_zones[2] = 'left_up'
+            self.win_zones[3] = 'right_up'
+            self.win_zones[4] = 'left_down'
+        if player_count == 6:
+            self.add_player('up',1)
+            self.add_player('left_up',2)
+            self.add_player('left_down',3)
+            self.add_player('down',4)
+            self.add_player('right_up',5)
+            self.add_player('right_down',6)
+            self.win_zones = {}
+            self.win_zones[1] = 'down'
+            self.win_zones[2] =  'right_down' 
+            self.win_zones[3] = 'right_up'
+            self.win_zones[4] = 'up'
+            self.win_zones[5] = 'left_down'
+            self.win_zones[6] = 'left_up'
+        self.selected = None
         return
     
     def make_board(self):
@@ -137,6 +178,7 @@ class Board():
                 if cell is not None:
                     arr.append(cell)
         self.zones['up'] = arr.copy()
+
 
         arr = []
         for i in range(13,17):
@@ -168,6 +210,7 @@ class Board():
         arr.extend(get_last_non_none_elements(self.board[11],3))
         arr.extend(get_last_non_none_elements(self.board[12],4))
         self.zones['right_down'] = arr.copy()
+
 
     def add_player(self, where, p):
         for cell in self.zones[where]:
