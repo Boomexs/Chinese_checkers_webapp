@@ -79,6 +79,9 @@ class Board_node():
             self.down_right = down_right
             self.down_right.up_left = self
 
+    def set_id(self, index: int):
+        self.id = index
+
     def __str__(self):
         return 'node'
     
@@ -94,63 +97,88 @@ class Board():
     def __init__(self, player_count: int):
         self.player_count = player_count
         self.moves = []
+        self.make_board()
+        self.make_flat_array()
+        self.connect_board()
+        self.make_zones()
+        self.add_player('up',1)
+        self.add_player('down',2)
+        self.add_player('left_up',-1)
+        self.add_player('left_down',-1)
+        self.add_player('right_up',-1)
+        self.add_player('right_down',-1)
+
         return
     
     def make_board(self):
         self.board = []
+        count = 0
         for row_count in STANDARD_BOARD:
-            place = 13 - floor(row_count / 2) - floor(13/2)
+            offset = row_count % 2
+            place = 13 - ceil(row_count / 2) - floor(13/2) + offset
             # self.board.append([None] * place + [Board_node(0)] * row_count + [None] * place)
             self.board.append([None] * place + [Board_node(0) for _ in range(row_count)] + [None] * place)
 
     def connect_board(self):
         for i in range(len(self.board)-1):
             for j in range(len(self.board[i])):
-                if self.board[i][j] is None:
-                    continue
-                self.board[i][j].connect(down_left=self.board[i+1][j-1],down_right=self.board[i+1][j])
+                if self.board[i][j] is not None:
+                    self.board[i][j].connect(right=self.board[i][j+1],left=self.board[i][j-1])
+                    offset = i % 2
+                    self.board[i][j].connect(down_right=self.board[i+1][j+offset])
+                    self.board[i][j].connect(down_left=self.board[i+1][j-1+offset])
 
-    def add_player(self, where: str, p: int):
-        # Where
-        # 1 == up 2 == down
-        if(where == 'up'):
-            for i in range(0,4):
-                for cell in self.board[i]:
-                    if cell is not None:
-                        cell.content = p
-        if(where == 'down'):
-            for i in range(13,17):
-                for cell in self.board[i]:
-                    if cell is not None:
-                        cell.content = p
-        if(where == 'left_up'):
-            arr = get_first_non_none_elements(self.board[4],4)
-            arr.extend(get_first_non_none_elements(self.board[5],3))
-            arr.extend(get_first_non_none_elements(self.board[6],2))
-            arr.extend(get_first_non_none_elements(self.board[7],1))
-            for cell in arr:
-                cell.content = p
-        if(where == 'right_up'):
-            arr = get_last_non_none_elements(self.board[4],4)
-            arr.extend(get_last_non_none_elements(self.board[5],3))
-            arr.extend(get_last_non_none_elements(self.board[6],2))
-            arr.extend(get_last_non_none_elements(self.board[7],1))
-            for cell in arr:
-                cell.content = p
-        if(where == 'left_down'):
-            arr = get_first_non_none_elements(self.board[9],1)
-            arr.extend(get_first_non_none_elements(self.board[10],2))
-            arr.extend(get_first_non_none_elements(self.board[11],3))
-            arr.extend(get_first_non_none_elements(self.board[12],4))
-            for cell in arr:
-                cell.content = p
-        if(where == 'right_down'):
-            arr = get_last_non_none_elements(self.board[9],1)
-            arr.extend(get_last_non_none_elements(self.board[10],2))
-            arr.extend(get_last_non_none_elements(self.board[11],3))
-            arr.extend(get_last_non_none_elements(self.board[12],4))
-            for cell in arr:
-                cell.content = p
+    def make_zones(self):
+        self.zones = {}
+
+        arr = []
+        for i in range(0,4):
+            for cell in self.board[i]:
+                if cell is not None:
+                    arr.append(cell)
+        self.zones['up'] = arr.copy()
+
+        arr = []
+        for i in range(13,17):
+            for cell in self.board[i]:
+                if cell is not None:
+                    arr.append(cell)
+        self.zones['down'] = arr.copy()
+
+        arr = get_first_non_none_elements(self.board[4],4)
+        arr.extend(get_first_non_none_elements(self.board[5],3))
+        arr.extend(get_first_non_none_elements(self.board[6],2))
+        arr.extend(get_first_non_none_elements(self.board[7],1))
+        self.zones['left_up'] = arr.copy()
+
+        arr = get_last_non_none_elements(self.board[4],4)
+        arr.extend(get_last_non_none_elements(self.board[5],3))
+        arr.extend(get_last_non_none_elements(self.board[6],2))
+        arr.extend(get_last_non_none_elements(self.board[7],1))
+        self.zones['right_up'] = arr.copy()
+        
+        arr = get_first_non_none_elements(self.board[9],1)
+        arr.extend(get_first_non_none_elements(self.board[10],2))
+        arr.extend(get_first_non_none_elements(self.board[11],3))
+        arr.extend(get_first_non_none_elements(self.board[12],4))
+        self.zones['left_down'] = arr.copy()
+
+        arr = get_last_non_none_elements(self.board[9],1)
+        arr.extend(get_last_non_none_elements(self.board[10],2))
+        arr.extend(get_last_non_none_elements(self.board[11],3))
+        arr.extend(get_last_non_none_elements(self.board[12],4))
+        self.zones['right_down'] = arr.copy()
+
+    def add_player(self, where, p):
+        for cell in self.zones[where]:
+            cell.content = p
+
+    def make_flat_array(self):
+        self.flatarr = [x for row in self.board for x in row if x is not None]
+        for i in range(len(self.flatarr)):
+            self.flatarr[i].set_id(i)
+
+
     def board_to_data(self):
         # Remove all None flatten to 1 dim array convert nodes to content
         to_send = [[int(x) for x in row if x is not None] for row in self.board]

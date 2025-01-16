@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from lobby import Lobby
+from move_validator import possible_moves
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -61,8 +62,7 @@ def handle_lobby_creation(data):
 
 @socketio.on('show_lobbies')
 def on_show_lobbies():
-    lobbies = [{'name': lobby_name, 'max_players': lobby.player_count, 'current_players': len(lobby.players)}
-               for lobby_name, lobby in available_lobbies.items()]
+    lobbies = [{'name': lobby_name, 'max_players': lobby.player_count, 'current_players': len(lobby.players)} for lobby_name, lobby in available_lobbies.items()]
     emit('lobbies_list', lobbies)
 
 @socketio.on('move')
@@ -99,8 +99,18 @@ def handle_get_board(data):
     lobby_name = data['lobby']
     if lobby_name in available_lobbies:
         print(f"updating board for {lobby_name}")
-        socketio.emit('update_board', {'board': available_lobbies[lobby_name].board.board_to_data()}, room=lobby_name )
+        emit('update_board', {'board': available_lobbies[lobby_name].board.board_to_data()}, room=lobby_name )
 
+@socketio.on('p_click')
+def handle_get_board(data):
+    print(f'p_click: {data}')
+    lobby_name = data['lobby']
+    player = data['player']
+    index = data['index']
+    if lobby_name in available_lobbies:
+        board_data = possible_moves(available_lobbies[lobby_name].board, index, player)
+        if board_data:
+            emit('update_board',{'board': board_data}, room=lobby_name)
 
 if __name__ == '__main__':
     socketio.run(app, port=5000, allow_unsafe_werkzeug=True)

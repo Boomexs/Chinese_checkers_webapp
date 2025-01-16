@@ -47,6 +47,10 @@ const Board = () => {
         socket.emit('get_board', {'lobby': lobby.name});
     },[socket]);
 
+    const onPClick = (index) => {
+        socket.emit('p_click', {'lobby': lobby.name, 'player': 1, 'index': index});
+    };
+
     // socket.emit('get_board', {'lobby': lobby.name});
 
     let itemIndex = 0;
@@ -61,19 +65,41 @@ const Board = () => {
     //     </div>
     // ));
     console.log(board);
-    const rows = 
-  <div className="board">
-    {board.map((row, rowIndex) => (
-      <div key={rowIndex} className="board-row">
-        {row.map((item, itemIndex) => (
-          <div key={itemIndex} className={'board-item ' + ('p' + item + '-color ')}>
-            {item}
-          </div>
-        ))}
-      </div>
-    ))}
+//     const rows = 
+//   <div className="board">
+//     {board.map((row, rowIndex) => (
+//       <div key={rowIndex} className="board-row">
+//         {row.map((item, itemIndex) => (
+//           <div key={itemIndex} onClick={() => {onPClick(itemIndex)}} className={'board-item ' + ('p' + item + '-color ')}>
+//             {item}
+//           </div>
+//         ))}
+//       </div>
+//     ))}
+//   </div>
+const rows = 
+<div className="board">
+{board.map((row, rowIndex) => (
+  <div key={rowIndex} className="board-row">
+    {row.map((item, itemIndex) => {
+      // calc global count
+      const globalCount = board
+        .slice(0, rowIndex) // get prev rows
+        .reduce((sum, prevRow) => sum + prevRow.length, 0) + itemIndex;
+
+      return (
+        <div
+          key={itemIndex}
+          onClick={() => onPClick(globalCount)}
+          className={`board-item p${item}-color`}
+        >
+          {globalCount} {/* Display the global count */}
+        </div>
+      );
+    })}
   </div>
-    
+))}
+</div>
 
     return <div className="board-container">{rows}</div>;
 };
