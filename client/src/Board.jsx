@@ -56,7 +56,7 @@ const Board = () => {
     },[socket]);
 
     const onPClick = (index,id) => {
-      console.log(('turn' + username))
+      console.log(('turn:' + username))
       console.log(turn === 'turn' + username)
       if(turn === ('turn' + username) && id > 0){
         socket.emit('p_click', {'lobby': lobby.name, 'username': username, 'index': index});
