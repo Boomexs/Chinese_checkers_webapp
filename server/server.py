@@ -1,13 +1,16 @@
-from flask import Flask, render_template, request
+from flask import Flask
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from lobby import Lobby
-from move_validator import possible_moves, check_for_win
+from handlers import *
+
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 
 socketio = SocketIO(app, cors_allowed_origins="http://localhost:5173")
 
+# Global lobby storage
 available_lobbies = {
     'lobby1': Lobby('lobby1', 6),
     'lobby2': Lobby('lobby2', 2),
@@ -15,124 +18,44 @@ available_lobbies = {
 }
 
 @socketio.on('connect')
-def test_connect():
-    send('Connected')
-    options_menu = {
-        'options': ['Option 1', 'Option 2', 'Option 3']
-    }
-    emit('show_options', options_menu)
+def on_connect():
+    handle_test_connect(socketio)
 
 @socketio.on('join')
 def on_join(data):
-    # print(f"Join request received: {data}")  # Debugging
-    username = data['username']
-    lobby_name = data['lobby']
-    if lobby_name in available_lobbies:
-        lobby = available_lobbies[lobby_name]
-        if not lobby.is_full():
-            join_room(lobby_name)
-            lobby.add_player(username)
-            if(lobby.is_full()):
-                lobby.state = 'turn' + str(lobby.players[0])
-                socketio.emit('update_state', {'state': lobby.state})
-            # print(f"User {username} added to {lobby_name}")  # Debugging
-            send(username + ' has entered the lobby', room=lobby_name)
-        else:
-            send('Lobby is full.', room=request.sid)
-    else:
-        send('Lobby not available.', room=request.sid)
+    handle_join(data, socketio, available_lobbies)
 
 @socketio.on('leave')
 def on_leave(data):
-    #print(f"Leave request received: {data}")  # Debug
-    username = data['username']
-    lobby_name = data['lobby']
-    if lobby_name in available_lobbies:
-        lobby = available_lobbies[lobby_name]
-        leave_room(lobby_name)
-        lobby.remove_player(username)
-        #print(f"{username} removed from {lobby_name}")  # Debug
-        send(username + ' has left the lobby', room=lobby_name)
-    #else:
-        #print(f"Lobby {lobby_name} not found")  # Debug
+    handle_leave(data, socketio, available_lobbies)
 
 @socketio.on('create')
-def handle_lobby_creation(data):
-    lobby_name = data['lobbyname']
-    max_users = data['needed_players']
-    available_lobbies[lobby_name] = Lobby(lobby_name, max_users)
-    emit('lobby_created', {'lobbyname': lobby_name, 'needed_players': max_users})
+def on_create(data):
+    handle_lobby_creation(data, socketio, available_lobbies)
 
 @socketio.on('show_lobbies')
 def on_show_lobbies():
-    lobbies = [{'name': lobby_name, 'max_players': lobby.player_count, 'current_players': len(lobby.players)} for lobby_name, lobby in available_lobbies.items()]
-    emit('lobbies_list', lobbies)
+    handle_show_lobbies(socketio, available_lobbies)
 
 @socketio.on('move')
-def handle_move(data):
-    lobby_name = data['lobby']
-    player = data['player']
-    move = data['move']
-    if not lobby_name in available_lobbies:
-        emit('error', {'message': 'Wrong lobby'}, room=request.sid)
-        return
-    lobby = available_lobbies[lobby_name]
-    message = lobby.make_move(player, move)
-    emit(message['success'], message['state'])
+def on_move(data):
+    handle_move(data, socketio, available_lobbies)
 
 @socketio.on('chat_message')
-def handle_chat_message(data):
-    # print(data)
-    lobby_name = data['lobby']
-    username = data['username']
-    message = data['message']
-
-    if lobby_name in available_lobbies:
-        # print(f"Chat message from {username} in {lobby_name}: {message}")
-        socketio.emit('chat_message', {'username': username, 'message': message}, room=lobby_name)
-    else:
-        emit('error', {'message': 'Lobby not available'}, room=request.sid)
+def on_chat_message(data):
+    handle_chat_message(data, socketio, available_lobbies)
 
 @socketio.on('get_board')
-def handle_get_board(data):
-    # print(f"get_board: {data}")
-    lobby_name = data['lobby']
-    if lobby_name in available_lobbies:
-        # print(f"updating board for {lobby_name}")
-        emit('update_board', {'board': available_lobbies[lobby_name].board.board_to_data()}, room=lobby_name )
+def on_get_board(data):
+    handle_get_board(data, socketio, available_lobbies)
 
 @socketio.on('p_click')
-def handle_get_board(data):
-    # print(f'p_click: {data}')
-    lobby_name = data['lobby']
-    # player = data['player']
-    index = data['index']
-    if lobby_name in available_lobbies:
-        player = available_lobbies[lobby_name].players.index(data['username']) + 1
-        board_data = possible_moves(available_lobbies[lobby_name].board, index, player)
-        if board_data:
-            emit('update_board',{'board': board_data}, room=lobby_name)
-        # else:
-        #     board_data = move(available_lobbies[lobby_name].board, index, player)
-        #     if board_data:
-        #         emit('update_board',{'board': available_lobbies[lobby_name].board}, room=lobby_name)
+def on_p_click(data):
+    handle_possible_moves(data, socketio, available_lobbies)
 
 @socketio.on('p_move')
-def handle_p_move(data):
-    lobby_name = data['lobby']
-    username = data['username']
-    player = available_lobbies[lobby_name].players.index(data['username']) + 1
-    if available_lobbies[lobby_name].state == ('turn' + username):
-        destination = data['destination']
-        available_lobbies[lobby_name].board.flatarr[destination].content = available_lobbies[lobby_name].board.selected.content
-        available_lobbies[lobby_name].board.selected.content = 0
-        emit('update_board', {'board': available_lobbies[lobby_name].board.board_to_data()}, room=lobby_name)
-        available_lobbies[lobby_name].next_turn()
-        emit('update_state',{'state': available_lobbies[lobby_name].state}, room=lobby_name)
-        if check_for_win(available_lobbies[lobby_name].board,player):
-            available_lobbies[lobby_name].state = 'won' + username
-            emit('update_state',{'state': available_lobbies[lobby_name].state}, room=lobby_name)
-            emit('chat_message',{'username': 'server', 'message': username + ' has won the game!'}, room=lobby_name)
+def on_p_move(data):
+    handle_p_move(data, socketio, available_lobbies)
 
 if __name__ == '__main__':
     socketio.run(app, port=5000, allow_unsafe_werkzeug=True)

@@ -6,33 +6,19 @@ class GameController:
         self.players = [f"Player {i+1}" for i in range(num_players)]
         self.winner = None
 
-    def transition(self):
-        if self.current_state == 'Settings':
-            self.start_game()
-        elif self.current_state == 'PlayerTurns':
-            self.next_turn()
-        elif self.current_state == 'GameEnd':
-            print(f"Game over! The winner is {self.winner}")
-
     def start_game(self):
-        print(f"Starting the game with {self.num_players} players...")
         self.current_state = 'PlayerTurns'
-        self.next_turn()
+        self.current_player = 0  # Start with the first player
 
     def next_turn(self):
-        print(f"{self.players[self.current_player]}'s turn.")
-        self.current_player = (self.current_player + 1) % self.num_players
-        if self.current_player == 0:
-            self.end_game()
+        if self.winner:
+            self.current_state = 'GameEnd'
         else:
-            self.transition()
+            self.current_player = (self.current_player + 1) % self.num_players
 
-    def end_game(self):
-        self.winner = self.players[(self.current_player - 1) % self.num_players]
+    def get_current_player(self):
+        return self.current_player + 1  # Return 1-based player index
+
+    def set_winner(self, player):
+        self.winner = player
         self.current_state = 'GameEnd'
-        self.transition()
-
-
-# Example usage
-game = GameController(num_players=4)
-game.transition()  # Start the game and proceed with turns
