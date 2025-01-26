@@ -3,6 +3,12 @@ from urllib import request
 from flask_socketio import join_room, leave_room, emit, send
 from move_validator import possible_moves, check_for_win
 from lobby import Lobby
+from moveValidator import GameStrategy1, GameStrategy2
+
+game_variants = {
+    '1': GameStrategy1(),
+    '2': GameStrategy2()
+}
 
 def handle_test_connect(socketio):
     send('Connected')
@@ -43,7 +49,8 @@ def handle_leave(data, socketio, available_lobbies):
 def handle_lobby_creation(data, socketio, available_lobbies):
     lobby_name = data['lobbyname']
     max_users = data['needed_players']
-    available_lobbies[lobby_name] = Lobby(lobby_name, max_users)
+    game_variant = data['game_variant']
+    available_lobbies[lobby_name] = Lobby(lobby_name, max_users, game_variants[game_variant])
     socketio.emit('lobby_created', {'lobbyname': lobby_name, 'needed_players': max_users})
 
 def handle_show_lobbies(socketio, available_lobbies):
@@ -83,7 +90,7 @@ def handle_possible_moves(data, socketio, available_lobbies):
     if lobby_name in available_lobbies:
         player = lobby.players.index(data['username']) + 1
         if player == lobby.game_controller.get_current_player():
-            board_data = possible_moves(lobby.board, index, player)
+            board_data = lobby.move_validator.possible_moves(lobby.board, index, player)
             if board_data:
                 socketio.emit('update_board', {'board': board_data}, room=lobby_name)
 

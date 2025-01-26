@@ -2,6 +2,7 @@ from flask import Flask
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from lobby import Lobby
 from handlers import *
+from moveValidator import GameStrategy1, GameStrategy2
 
 
 
@@ -12,9 +13,9 @@ socketio = SocketIO(app, cors_allowed_origins="http://localhost:5173")
 
 # Global lobby storage
 available_lobbies = {
-    'lobby1': Lobby('lobby1', 6),
-    'lobby2': Lobby('lobby2', 2),
-    'lobby3': Lobby('lobby3', 3)
+    'lobby1': Lobby('lobby1', 6, GameStrategy1()),
+    'lobby2': Lobby('lobby2', 2, GameStrategy2()),
+    'lobby3': Lobby('lobby3', 3, GameStrategy1())
 }
 
 @socketio.on('connect')
