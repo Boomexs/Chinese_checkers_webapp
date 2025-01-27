@@ -32,6 +32,23 @@
     opacity: 0.8; /* Example: reducing opacity */ /* Optional: hover effect */
 }
 
+.turn-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 20px;
+    margin: 20px 0;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-size: 1.2em;
+    color: #333;
+    font-weight: bold;
+    text-align: center;
+}
+
+
+
 /* 
 .p0-color {
     background-color: #6c63ff;
