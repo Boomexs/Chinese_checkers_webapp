@@ -43,32 +43,28 @@ def check_move_rec(node: Board_node):
     if node.up_left is not None:
         if node.up_left.content == 0:
             node.up_left.content = -2            
-            # check_move_rec(node.up_left)
 
     if node.up_right is not None:
         if node.up_right.content == 0:
             node.up_right.content = -2
-            # check_move_rec(node.up_right)
 
     if node.right is not None:
         if node.right.content == 0:
             node.right.content = -2
-            # check_move_rec(node.right)
 
     if node.left is not None:
         if node.left.content == 0:
             node.left.content = -2
-            # check_move_rec(node.left)
 
+            
     if node.down_left is not None:
         if node.down_left.content == 0:
             node.down_left.content = -2
-            # check_move_rec(node.down_left)
+
 
     if node.down_right is not None:
         if node.down_right.content == 0:
             node.down_right.content = -2
-            # check_move_rec(node.down_right)
 
     try_jump(node)
 
@@ -76,9 +72,7 @@ def check_move_rec(node: Board_node):
 
 
 def possible_moves(board: Board, node_index: int, p: int):
-    # print('possible moves start')
     node: Board_node
-    # print(board.flatarr)
     node = board.flatarr[node_index]
 
     if node is None:
@@ -92,41 +86,20 @@ def possible_moves(board: Board, node_index: int, p: int):
     check_move_rec(copy_of_node)  
         
     board.selected = node
-    # if copy_of_node.up_right is not None:
-    #     print('up_right')
-    #     print(copy_of_node.up_right.id)
-    # if copy_of_node.up_left is not None:
-    #     print('up_left')
-    #     print(copy_of_node.up_left.id)
-    # if copy_of_node.left is not None:
-    #     print('left')
-    #     print(copy_of_node.left.id)
-    # if copy_of_node.right is not None:
-    #     print('right')
-    #     print(copy_of_node.right.id)
-    # if copy_of_node.down_left is not None:
-    #     print('down_left')
-    #     print(copy_of_node.down_left.id)
-    # if copy_of_node.down_right is not None:
-    #     print('down_right')
-    #     print(copy_of_node.down_right.id)
 
     return copy_of_board.board_to_data()
 
 def check_for_win(board: Board, p: int):
     zone = board.zones[board.win_zones[p]]
-    print(board.zones[board.win_zones[p]],board.zones,board.win_zones,p)
+
     if None in zone:
         return False
-    # print('made it past None in zone')
     win_flag = False
 
     for cell in zone:
         if cell.content == p:
-            # print('found cell with p')
             win_flag = True
         elif cell.content == 0:
-            # print('found cell with 0 :(')
             return False
         
     return win_flag
