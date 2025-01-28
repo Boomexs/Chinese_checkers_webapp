@@ -15,6 +15,27 @@ class MoveValidator:
     def possible_moves(self, board: Board, node_index: int, p: int):
         return self._game_strategy.possible_moves(board, node_index, p)
 
+    @staticmethod
+    def check_for_win(board: Board, p: int):
+        zone = board.zones[board.win_zones[p]]
+        print(board.zones[board.win_zones[p]],board.zones,board.win_zones,p)
+        if None in zone:
+            return False
+        # print('made it past None in zone')
+        #win_flag = False
+        pieces = 0
+
+        for cell in zone:
+            if cell.content == p:
+                # print('found cell with p')
+                #win_flag = True
+                pieces += 1
+            #elif cell.content == 0:
+            # print('found cell with 0 :(')
+            #return False
+
+        return pieces == board.player_pieces[p]
+
 
 class GameStrategy(ABC):
     @abstractmethod

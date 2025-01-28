@@ -1,7 +1,7 @@
 from urllib import request
 
 from flask_socketio import join_room, leave_room, emit, send
-from move_helper import possible_moves, check_for_win
+#from move_validator import possible_moves, check_for_win
 from lobby import Lobby
 from moveValidator import GameStrategy1, GameStrategy2
 
@@ -110,15 +110,14 @@ def handle_p_move(data, socketio, available_lobbies):
 
         # Move logic
         board.flatarr[destination].content = board.selected.content
+        board.decrease_player_pieces(board.selected.content)
         board.selected.content = 0
 
-        board.moves.append([destination,board.selected.id])
-        print('Board moves: ', board.moves)
         # Broadcast board update
         socketio.emit('update_board', {'board': board.board_to_data()}, room=lobby_name)
 
         # Check for win
-        if check_for_win(board, player_index):
+        if lobby.move_validator.check_for_win(board, player_index):
             lobby.set_winner(username)
             socketio.emit('update_state', {'state': f'won{username}'}, room=lobby_name)
             socketio.emit('chat_message', {

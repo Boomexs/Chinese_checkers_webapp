@@ -101,6 +101,7 @@ class Board():
         self.make_flat_array()
         self.connect_board()
         self.make_zones()
+        self.player_pieces = {p: 0 for p in range(1, player_count + 1)}
         if player_count == 2:
             self.add_player('up',1)
             self.add_player('down',2)
@@ -149,6 +150,7 @@ class Board():
             self.win_zones[5] = 'left_down'
             self.win_zones[6] = 'left_up'
         self.selected = None
+
         return
     
     def make_board(self):
@@ -215,6 +217,11 @@ class Board():
     def add_player(self, where, p):
         for cell in self.zones[where]:
             cell.content = p
+            self.player_pieces[p] = 10
+
+    def decrease_player_pieces(self, p):
+        if p in self.player_pieces:
+            self.player_pieces[p] -= 1
 
     def make_flat_array(self):
         self.flatarr = [x for row in self.board for x in row if x is not None]
