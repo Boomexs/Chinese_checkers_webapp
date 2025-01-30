@@ -13,9 +13,9 @@ socketio = SocketIO(app, cors_allowed_origins="http://localhost:5173")
 
 # Global lobby storage
 available_lobbies = {
-    'lobby1': Lobby('lobby1', 6, GameStrategy1()),
-    'lobby2': Lobby('lobby2', 2, GameStrategy2()),
-    'lobby3': Lobby('lobby3', 3, GameStrategy1())
+    'lobby1': Lobby('lobby1', 6, 0, GameStrategy2(), socketio),
+    'lobby2': Lobby('lobby2', 2, 0, GameStrategy2(), socketio),
+    'lobby3': Lobby('lobby3', 3, 0, GameStrategy1(), socketio)
 }
 
 @socketio.on('connect')

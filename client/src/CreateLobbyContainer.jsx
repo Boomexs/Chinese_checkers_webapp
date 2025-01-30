@@ -28,7 +28,7 @@ const createLobbyContainer = ({ joinCreatedLobby }) => {
         event.preventDefault();
         if (lobbyName && maxPlayers > 0) {
             console.log('Creating lobby:', lobbyName, maxPlayers, gameVariant);
-            socket.emit('create', { lobbyname: lobbyName, needed_players: maxPlayers, game_variant: gameVariant });
+            socket.emit('create', { lobbyname: lobbyName, needed_players: maxPlayers, game_variant: gameVariant, bot_count: botCount });
             joinCreatedLobby({ name: lobbyName, maxPlayers: maxPlayers, currentPlayers: 1 });
         }
     };
@@ -55,7 +55,7 @@ const createLobbyContainer = ({ joinCreatedLobby }) => {
                 <label>
                     Bot Count: { }
                     <select value={botCount} onChange={handleBotCountChange}>
-                        {Array.from({ length: maxPlayers - 1 }, (_, index) => index + 1).map((num) => (
+                        {Array.from({ length: maxPlayers }, (_, index) => index).map((num) => (
                             <option key={num} value={num}>
                                 {num}
                             </option>

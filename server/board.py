@@ -233,9 +233,14 @@ class Board():
         # Remove all None flatten to 1 dim array convert nodes to content
         to_send = [[int(x) for x in row if x is not None] for row in self.board]
         return to_send
+
+    def board_to_full_data(self):
+        to_send = [[{'id': x.id, 'content': int(x)} for x in row if x is not None] for row in self.board]
+        return to_send
     
 if(__name__ =='__main__'):
     test = Board(2)
     test.make_board()
     test.connect_board()
     test.board_to_data()
+

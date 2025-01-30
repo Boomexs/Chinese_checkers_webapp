@@ -6,7 +6,7 @@ from moveValidator import GameStrategy1, MoveValidator
 
 class TestGame(unittest.TestCase):
     def setUp(self):
-        self.lobby = Lobby("test_lobby", 2, GameStrategy1())
+        self.lobby = Lobby("test_lobby", 2, 0, GameStrategy1(), None)
         self.lobby.add_player("player1")
         self.lobby.add_player("player2")
         self.move_validator = MoveValidator(GameStrategy1())

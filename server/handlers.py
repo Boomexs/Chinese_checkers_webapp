@@ -1,7 +1,6 @@
-from urllib import request
+from flask import request
 
 from flask_socketio import join_room, leave_room, emit, send
-#from move_validator import possible_moves, check_for_win
 from lobby import Lobby
 from moveValidator import GameStrategy1, GameStrategy2
 
@@ -26,7 +25,7 @@ def handle_join(data, socketio, available_lobbies):
             join_room(lobby_name)
             lobby.add_player(username)
             if lobby.is_full():
-                lobby.game_controller.start_game()
+                lobby.start_game()
                 #lobby.state = 'turn' + str(lobby.players[0])
                 socketio.emit('update_state', {
                     'state': f'turn{lobby.players[lobby.game_controller.current_player]}'
@@ -50,7 +49,8 @@ def handle_lobby_creation(data, socketio, available_lobbies):
     lobby_name = data['lobbyname']
     max_users = data['needed_players']
     game_variant = data['game_variant']
-    available_lobbies[lobby_name] = Lobby(lobby_name, max_users, game_variants[game_variant])
+    bot_count = data['bot_count']
+    available_lobbies[lobby_name] = Lobby(lobby_name, max_users, bot_count, game_variants[game_variant], socketio)
     socketio.emit('lobby_created', {'lobbyname': lobby_name, 'needed_players': max_users})
 
 def handle_show_lobbies(socketio, available_lobbies):

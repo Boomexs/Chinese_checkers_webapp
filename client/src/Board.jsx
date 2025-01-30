@@ -31,6 +31,7 @@ const Board = () => {
     }, [socket, lobby.name]);
 
     const onPClick = (index, id) => {
+        console.log('index:', index, ' id:', id);
         if (currentTurn !== `turn${username}`) {
             setErrorMessage('It is not your turn!');
             return;

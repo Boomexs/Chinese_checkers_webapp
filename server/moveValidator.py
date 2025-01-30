@@ -44,7 +44,7 @@ class GameStrategy(ABC):
 
 
 class GameStrategy1(GameStrategy):
-    def try_jump(self, node: Board_node):
+    def try_jump(self ,node: Board_node):
         if node.up_left is not None and node.up_left.content > 0:
             jump_node = node.up_left.up_left
             if jump_node is not None and jump_node.content == 0:
@@ -81,6 +81,7 @@ class GameStrategy1(GameStrategy):
                 jump_node.content = -2
                 self.try_jump(jump_node)
 
+
     def check_move_rec(self, node: Board_node):
         if node.up_left is not None:
             if node.up_left.content == 0:
@@ -116,6 +117,7 @@ class GameStrategy1(GameStrategy):
 
         return
 
+
     def possible_moves(self, board: Board, node_index: int, p: int):
         # print('possible moves start')
         node: Board_node
@@ -133,8 +135,27 @@ class GameStrategy1(GameStrategy):
         self.check_move_rec(copy_of_node)
 
         board.selected = node
+        # if copy_of_node.up_right is not None:
+        #     print('up_right')
+        #     print(copy_of_node.up_right.id)
+        # if copy_of_node.up_left is not None:
+        #     print('up_left')
+        #     print(copy_of_node.up_left.id)
+        # if copy_of_node.left is not None:
+        #     print('left')
+        #     print(copy_of_node.left.id)
+        # if copy_of_node.right is not None:
+        #     print('right')
+        #     print(copy_of_node.right.id)
+        # if copy_of_node.down_left is not None:
+        #     print('down_left')
+        #     print(copy_of_node.down_left.id)
+        # if copy_of_node.down_right is not None:
+        #     print('down_right')
+        #     print(copy_of_node.down_right.id)
 
         return copy_of_board.board_to_data()
+
 
 
 class GameStrategy2(GameStrategy):
@@ -184,3 +205,36 @@ class GameStrategy2(GameStrategy):
         board.selected = node
 
         return copy_of_board.board_to_data()
+
+def convert_moves_to_indexes(board_data):
+    indexes = []
+    index = 0
+    for row in board_data:
+        for cell in row:
+            if cell == -2:
+                indexes.append(index)
+            index += 1
+    return indexes
+
+def main():
+    # Initialize the board
+    board = Board(2)  # Assuming 2 is the size or some parameter for the board
+
+    # Initialize the game strategy
+    game_strategy = GameStrategy1()
+
+    # Initialize the move validator with the game strategy
+    move_validator = MoveValidator(game_strategy)
+
+    # Choose a node index and player number
+    node_index = 6  # Example node index
+    player_number = 1  # Example player number
+
+    # Get possible moves
+    possible_moves = convert_moves_to_indexes(move_validator.possible_moves(board, node_index, player_number))
+
+    # Print possible moves
+    print(possible_moves)
+
+if __name__ == '__main__':
+    main()
